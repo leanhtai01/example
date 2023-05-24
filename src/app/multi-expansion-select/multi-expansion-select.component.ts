@@ -203,12 +203,14 @@ export class MultiExpansionSelectComponent {
     // Force update for the parent
     descendants.forEach((child) => this.checklistSelection.isSelected(child));
     this.checkAllParentsSelection(node);
+    console.log(this.checklistSelection.selected);
   }
 
   /** Toggle a leaf to-do item selection. Check all the parents to see if they changed */
   todoLeafItemSelectionToggle(node: ItemFlatNode): void {
     this.checklistSelection.toggle(node);
     this.checkAllParentsSelection(node);
+    console.log(this.checklistSelection.selected);
   }
 
   /* Checks all the parents when a leaf node is selected/unselected */
