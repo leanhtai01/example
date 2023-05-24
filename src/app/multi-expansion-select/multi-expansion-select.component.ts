@@ -1,8 +1,11 @@
-import {Component, Injectable} from '@angular/core';
-import {BehaviorSubject} from 'rxjs';
-import {FlatTreeControl} from "@angular/cdk/tree";
-import {MatTreeFlatDataSource, MatTreeFlattener} from "@angular/material/tree";
-import {SelectionModel} from "@angular/cdk/collections";
+import { Component, Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { FlatTreeControl } from '@angular/cdk/tree';
+import {
+  MatTreeFlatDataSource,
+  MatTreeFlattener,
+} from '@angular/material/tree';
+import { SelectionModel } from '@angular/cdk/collections';
 
 /**
  * Node for item
@@ -87,7 +90,7 @@ export class ChecklistDatabase {
   selector: 'app-multi-expansion-select',
   templateUrl: './multi-expansion-select.component.html',
   styleUrls: ['./multi-expansion-select.component.css'],
-  providers: [ChecklistDatabase]
+  providers: [ChecklistDatabase],
 })
 export class MultiExpansionSelectComponent {
   /** Map from flat node to nested node. This helps us finding the nested node to be modified */
@@ -105,21 +108,6 @@ export class MultiExpansionSelectComponent {
   /** The selection for checklist */
   checklistSelection = new SelectionModel<ItemFlatNode>(true /* multiple */);
 
-  constructor(private _database: ChecklistDatabase) {
-    this.treeFlattener = new MatTreeFlattener(
-      this.transformer,
-      this.getLevel,
-      this.isExpandable,
-      this.getChildren,
-    );
-    this.treeControl = new FlatTreeControl<ItemFlatNode>(this.getLevel, this.isExpandable);
-    this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
-
-    _database.dataChange.subscribe(data => {
-      this.dataSource.data = data;
-    });
-  }
-
   getLevel = (node: ItemFlatNode) => node.level;
 
   isExpandable = (node: ItemFlatNode) => node.expandable;
@@ -136,7 +124,9 @@ export class MultiExpansionSelectComponent {
   transformer = (node: ItemNode, level: number) => {
     const existingNode = this.nestedNodeMap.get(node);
     const flatNode =
-      existingNode && existingNode.item === node.item ? existingNode : new ItemFlatNode('', 0, false);
+      existingNode && existingNode.item === node.item
+        ? existingNode
+        : new ItemFlatNode('', 0, false);
     flatNode.item = node.item;
     flatNode.level = level;
     flatNode.expandable = !!node.children?.length;
@@ -145,19 +135,44 @@ export class MultiExpansionSelectComponent {
     return flatNode;
   };
 
+  constructor(private _database: ChecklistDatabase) {
+    this.treeFlattener = new MatTreeFlattener(
+      this.transformer,
+      this.getLevel,
+      this.isExpandable,
+      this.getChildren
+    );
+    this.treeControl = new FlatTreeControl<ItemFlatNode>(
+      this.getLevel,
+      this.isExpandable
+    );
+    this.dataSource = new MatTreeFlatDataSource(
+      this.treeControl,
+      this.treeFlattener
+    );
+
+    _database.dataChange.subscribe((data) => {
+      this.dataSource.data = data;
+    });
+  }
+
   /** Whether all the descendants of the node are selected. */
   descendantsAllSelected(node: ItemFlatNode): boolean {
     const descendants = this.treeControl.getDescendants(node);
-    return descendants.length > 0 &&
-      descendants.every(child => {
+    return (
+      descendants.length > 0 &&
+      descendants.every((child) => {
         return this.checklistSelection.isSelected(child);
-      });
+      })
+    );
   }
 
   /** Whether part of the descendants are selected */
   descendantsPartiallySelected(node: ItemFlatNode): boolean {
     const descendants = this.treeControl.getDescendants(node);
-    const result = descendants.some(child => this.checklistSelection.isSelected(child));
+    const result = descendants.some((child) =>
+      this.checklistSelection.isSelected(child)
+    );
     return result && !this.descendantsAllSelected(node);
   }
 
@@ -170,7 +185,7 @@ export class MultiExpansionSelectComponent {
       : this.checklistSelection.deselect(...descendants);
 
     // Force update for the parent
-    descendants.forEach(child => this.checklistSelection.isSelected(child));
+    descendants.forEach((child) => this.checklistSelection.isSelected(child));
     this.checkAllParentsSelection(node);
   }
 
@@ -195,7 +210,7 @@ export class MultiExpansionSelectComponent {
     const descendants = this.treeControl.getDescendants(node);
     const descAllSelected =
       descendants.length > 0 &&
-      descendants.every(child => {
+      descendants.every((child) => {
         return this.checklistSelection.isSelected(child);
       });
     if (nodeSelected && !descAllSelected) {
