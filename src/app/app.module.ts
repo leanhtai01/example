@@ -3,10 +3,12 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MultiExpansionSelectComponent } from './multi-expansion-select/multi-expansion-select.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    MultiExpansionSelectComponent
   ],
   imports: [
     BrowserModule,
