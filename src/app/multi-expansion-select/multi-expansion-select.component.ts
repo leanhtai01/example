@@ -1,11 +1,10 @@
-import { Component, Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { SelectionModel } from '@angular/cdk/collections';
 import { FlatTreeControl } from '@angular/cdk/tree';
+import { Component } from '@angular/core';
 import {
   MatTreeFlatDataSource,
   MatTreeFlattener,
 } from '@angular/material/tree';
-import { SelectionModel } from '@angular/cdk/collections';
 
 export interface LayerManagerInfo {
   managerId: number;
@@ -34,70 +33,36 @@ export class ItemFlatNode {
   ) {}
 }
 
-/**
- * Json object for list data
- */
-const TREE_DATA: ItemNode[] = [
-  {
-    item: 'Layer 1',
-    children: [
-      {
-        item: 'Le Anh Tai',
+function buildTree(): ItemNode[] {
+  let listNode: ItemNode[] = [];
+
+  for (let i = 0; i < 6; ++i) {
+    const layer: ItemNode = {
+      item: `Layer ${i}`,
+      children: []
+    };
+
+    for (let j = 0; j < 2000; ++j) {
+      const manager: ItemNode = {
+        item: `Manager ${j}`,
         children: [],
         data: {
-          managerId: 11760711,
-          managerName: 'Le Anh Tai',
-          managerEmail: 'taianh.le@dxc.com',
-          orgId: '8888888',
-          orgName: 'DXC VN',
+          managerId: j,
+          managerName: `Manager ${j}`,
+          managerEmail: `manager${j}@gmail.com`,
+          orgId: `OrgId ${j}`,
+          orgName: `OrgName ${j}`,
         },
-      },
-    ],
-  },
-  {
-    item: 'Layer 2',
-    children: [
-      {
-        item: 'Le Anh Tri',
-        children: [],
-        data: {
-          managerId: 11760711,
-          managerName: 'Le Anh Tri',
-          managerEmail: 'anhtril237@gmail.com',
-          orgId: '7777777',
-          orgName: 'Ho Chi Minh',
-        },
-      },
-      {
-        item: 'Le Van Tuan',
-        children: [],
-        data: {
-          managerId: 11760711,
-          managerName: 'Le Van Tuan',
-          managerEmail: 'taianh.le@dxc.com',
-          orgId: '6666666',
-          orgName: 'Hue',
-        },
-      },
-    ],
-  },
-  {
-    item: 'Layer 3',
-    children: [
-      {
-        item: 'Tran Thi Thanh Huyen',
-        children: [],
-        data: {
-          managerId: 11760711,
-          managerName: 'Tran Thi Thanh Huyen',
-          managerEmail: 'huyen@gmail.com',
-          orgId: '55557555',
-          orgName: 'Ha Noi',
-        },
-      },
-    ],
-  },
-];
+      };
+
+      layer.children.push(manager);
+    }
+
+    listNode.push(layer);
+  }
+
+  return listNode;
+}
 
 @Component({
   selector: 'app-multi-expansion-select',
@@ -163,7 +128,7 @@ export class MultiExpansionSelectComponent {
       this.treeControl,
       this.treeFlattener
     );
-    this.dataSource.data = TREE_DATA;
+    this.dataSource.data = buildTree();
   }
 
   /** Whether all the descendants of the node are selected. */
