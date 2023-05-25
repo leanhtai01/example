@@ -7,11 +7,19 @@ import {
 } from '@angular/material/tree';
 import { SelectionModel } from '@angular/cdk/collections';
 
+export interface LayerManagerInfo {
+  managerId: number;
+  managerName: string;
+  managerEmail: string;
+  orgId: string;
+  orgName: string;
+}
+
 /**
  * Node for item
  */
 export class ItemNode {
-  constructor(public item: string, public children: ItemNode[]) {}
+  constructor(public item: string, public children: ItemNode[], public data?: LayerManagerInfo) {}
 }
 
 /**
@@ -21,92 +29,80 @@ export class ItemFlatNode {
   constructor(
     public item: string,
     public level: number,
-    public expandable: boolean
+    public expandable: boolean,
+    public data?: LayerManagerInfo
   ) {}
 }
 
 /**
  * Json object for list data
  */
-const TREE_DATA = {
-  'Layer 1': {
-    'Le Anh Tai': null,
-    'Le Anh Tri': null,
+const TREE_DATA: ItemNode[] = [
+  {
+    item: 'Layer 1',
+    children: [
+      {
+        item: 'Le Anh Tai',
+        children: [],
+        data: {
+          managerId: 11760711,
+          managerName: 'Le Anh Tai',
+          managerEmail: 'taianh.le@dxc.com',
+          orgId: '8888888',
+          orgName: 'DXC VN',
+        },
+      },
+    ],
   },
-  'Layer 2': {
-    'Le Van Tuan': null,
-    'Tran Thi Thanh Huyen': null,
+  {
+    item: 'Layer 2',
+    children: [
+      {
+        item: 'Le Anh Tri',
+        children: [],
+        data: {
+          managerId: 11760711,
+          managerName: 'Le Anh Tri',
+          managerEmail: 'anhtril237@gmail.com',
+          orgId: '7777777',
+          orgName: 'Ho Chi Minh',
+        },
+      },
+      {
+        item: 'Le Van Tuan',
+        children: [],
+        data: {
+          managerId: 11760711,
+          managerName: 'Le Van Tuan',
+          managerEmail: 'taianh.le@dxc.com',
+          orgId: '6666666',
+          orgName: 'Hue',
+        },
+      },
+    ],
   },
-  'Layer 3': {
-    'Le Van Tuan': null,
-    'Tran Thi Thanh Huyen': null,
+  {
+    item: 'Layer 3',
+    children: [
+      {
+        item: 'Tran Thi Thanh Huyen',
+        children: [],
+        data: {
+          managerId: 11760711,
+          managerName: 'Tran Thi Thanh Huyen',
+          managerEmail: 'huyen@gmail.com',
+          orgId: '55557555',
+          orgName: 'Ha Noi',
+        },
+      },
+    ],
   },
-  'Layer 4': {
-    'Le Van Tuan': null,
-    'Tran Thi Thanh Huyen': null,
-  },
-  'Layer 5': {
-    'Le Van Tuan': null,
-    'Tran Thi Thanh Huyen': null,
-  },
-  'Layer 6': {
-    'Le Van Tuan': null,
-    'Tran Thi Thanh Huyen': null,
-  },
-};
-
-/**
- * Checklist database, it can build a tree structured Json object.
- */
-@Injectable()
-export class ChecklistDatabase {
-  dataChange = new BehaviorSubject<ItemNode[]>([]);
-
-  get data(): ItemNode[] {
-    return this.dataChange.value;
-  }
-
-  constructor() {
-    this.initialize();
-  }
-
-  initialize() {
-    // Build the tree nodes from Json object. The result is a list of `TodoItemNode` with nested
-    //     file node as children.
-    const data = this.buildFileTree(TREE_DATA, 0);
-
-    // Notify the change.
-    this.dataChange.next(data);
-  }
-
-  /**
-   * Build the file structure tree. The `value` is the Json object, or a sub-tree of a Json object.
-   * The return value is the list of `TodoItemNode`.
-   */
-  buildFileTree(obj: { [key: string]: any }, level: number): ItemNode[] {
-    return Object.keys(obj).reduce<ItemNode[]>((accumulator, key) => {
-      const value = obj[key];
-      const node = new ItemNode('', []);
-      node.item = key;
-
-      if (value != null) {
-        if (typeof value === 'object') {
-          node.children = this.buildFileTree(value, level + 1);
-        } else {
-          node.item = value;
-        }
-      }
-
-      return accumulator.concat(node);
-    }, []);
-  }
-}
+];
 
 @Component({
   selector: 'app-multi-expansion-select',
   templateUrl: './multi-expansion-select.component.html',
-  styleUrls: ['./multi-expansion-select.component.css'],
-  providers: [ChecklistDatabase],
+  styleUrls: ['./multi-expansion-select.component.css']
 })
 export class MultiExpansionSelectComponent {
   /** Map from flat node to nested node. This helps us finding the nested node to be modified */
@@ -146,12 +142,13 @@ export class MultiExpansionSelectComponent {
     flatNode.item = node.item;
     flatNode.level = level;
     flatNode.expandable = !!node.children?.length;
+    flatNode.data = node.data;
     this.flatNodeMap.set(flatNode, node);
     this.nestedNodeMap.set(node, flatNode);
     return flatNode;
   };
 
-  constructor(private _database: ChecklistDatabase) {
+  constructor() {
     this.treeFlattener = new MatTreeFlattener(
       this.transformer,
       this.getLevel,
@@ -166,10 +163,7 @@ export class MultiExpansionSelectComponent {
       this.treeControl,
       this.treeFlattener
     );
-
-    _database.dataChange.subscribe((data) => {
-      this.dataSource.data = data;
-    });
+    this.dataSource.data = TREE_DATA;
   }
 
   /** Whether all the descendants of the node are selected. */
